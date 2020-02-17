@@ -1,5 +1,12 @@
 # goFEP
-goFEP is aCommand line application for running free energy perturbation (FEP) simulations using Tinker-OpenMM on the Ren Lab cluster
+goFEP is a Command line application for running free energy perturbation (FEP) simulations using Tinker-OpenMM on the Ren Lab cluster
+## Features
+* Cross-platform: goFEP binaries are available for Linux and OS X amd64 and arm architectures
+* No Dependancies: goFEP does not require any software to be installed except Tinker-OpenMM
+* Easy to use: Run FEP using a single command
+* Configurable: goFEP enables control of all the options that Tinker `dynamic_omm` and `bar_omm` do
+* Fast: goFEP automatically assigns your jobs to the most powerful available GPUs in the cluster
+* User Friendly: goFEP automatically detects missing or faulty parameters in its configuration file, and warns the user
 ## Inputs
 * goFEP requires the same input files as Tinker: an `xyz`, `key` and `prm` file
 * In addition, goFEP needs three things to run: a binary file, settings INI file, and node INI file. These will hereafter be referred to as `gofep`, `settings.ini`, and `nodes.ini`, though you can name them whatever you like.
