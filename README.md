@@ -11,10 +11,10 @@ goFEP is a Command line application for running free energy perturbation (FEP) s
 * goFEP requires the same input files as Tinker: an `xyz`, `key` and `prm` file
 * In addition, goFEP needs three things to run: a binary file, settings INI file, and node INI file. These will hereafter be referred to as `gofep`, `settings.ini`, and `nodes.ini`, though you can name them whatever you like.
 ### Installing the Binary File
-#### From Binary
+###### From Binary
 1. Copy a binary file from `/home/jtg2769/software/gofep/releases` to a folder of your choice
 2. Add the folder to your path definition: `PATH=$PATH:/home/jtg2769/exampleFolder/`
-#### From Source
+###### From Source
 1. Download and install Go (https://golang.org/dl) for your system
 2. Download the source files from this repository to a folder of your choice
 3. Convert the downloaded source files to a binary using `go build` (http://golang.org/pkg/go/build/)
@@ -35,9 +35,9 @@ You can activate the built-in help function by running goFEP with no arguments: 
 * `setup` sets up the file structure for `dynamic`
 * It takes the `vdwLambdas`, `eleLambdas`, and `restraints` parameters specified in the `setup` block of `settings.ini` and creates a folder for each combination with an `xyz` and `key` file inside
 * setup exists mainly to give you a chance to determine whether goFEP created the files you desired before you jump into a lengthy molecular dynamics run
-#### Arguments
+###### Arguments
 1. the path to `settings.ini`
-#### Example Usage
+###### Example Usage
 `gofep /path/to/settings.ini setup`
 ### dynamic
 * `dynamic` runs Tinker-OpenMM's dynamic_omm.x executable on each directory created by `setup` in parallel on different cluster nodes
