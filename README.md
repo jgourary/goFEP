@@ -12,7 +12,7 @@ goFEP is a command line application for running free energy perturbation (FEP) s
 * In addition, goFEP needs three things to run: a binary file, settings INI file, and node INI file. These will hereafter be referred to as `gofep`, `settings.ini`, and `nodes.ini`, though you can name them whatever you like.
 ### Installing the Binary File
 ###### From Binary
-1. Copy a binary file from `/home/jtg2769/software/gofep/releases` to a folder of your choice
+1. Copy a binary file from the releases section of this repository or `/home/jtg2769/software/gofep/releases` to a folder of your choice
 2. Add the folder to your path definition: `PATH=$PATH:/home/jtg2769/exampleFolder/`
 ###### From Source
 1. Download and install Go (https://golang.org/dl) for your system
