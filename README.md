@@ -28,7 +28,7 @@ goFEP is a Command line application for running free energy perturbation (FEP) s
 * Commenting is allowed in this file using `#`
 * A template `nodes.ini` with explanatory comments can be found at `/home/jtg2769/software/gofep/sampleInput/`
 ## Running goFEP from the command line
-goFEP can run in five modes: `help`,`setup`,`dynamic`,`bar`
+goFEP can run in five modes: `help`,`setup`,`dynamic`,`bar`, and `auto`
 ### help
 You can activate the built-in help function by running goFEP with no arguments: `gofep`
 ### setup
@@ -56,7 +56,7 @@ You can activate the built-in help function by running goFEP with no arguments: 
 2. the maximum number of nodes to run on. If set to `-1`, it will try to assign each job to a different node.
 ###### Example Usage
 `gofep /path/to/settings.ini bar 19`
-### bar
+### auto
 * `auto` is equivalent to running `setup`, then `dynamic` (with call type `new`) then `bar`
 ###### Arguments
 1. the path to `settings.ini`
