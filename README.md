@@ -6,6 +6,7 @@ goFEP is a command line application written in Go for the complete automation of
 * Easy to use: Install goFEP to your PATH and run FEP from anywhere with a single command
 * Configurable: goFEP enables control of all the options that Tinker-OpenMM functions `dynamic_omm` and `bar_omm` do through an easy to configure INI file
 * Fast: goFEP automatically assigns your jobs to the most powerful available GPUs in the cluster
+* Flexible: easily add intermediate van der Waals and electrostatic combinations or extend simulation duration
 * User Friendly: goFEP automatically detects missing or faulty parameters in its configuration file, and warns the user
 ## Inputs
 * goFEP requires the same input files as Tinker: an `xyz`, `key` and `prm` file
