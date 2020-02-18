@@ -64,14 +64,14 @@ You can activate the built-in help function by running goFEP with no arguments: 
 ###### Example Usage
 `gofep /path/to/settings.ini auto -1`
 ## Practical Usage
+### General Usage
 * When first using goFEP, it is recommended that you first run `setup`, then once you have verified that goFEP set up for FEP as you intended, run `auto`
 * This is because it is tedious to kill 20+ jobs on different nodes if you realize they are not doing what you wanted
 * Once you have used goFEP several times, it is anticipated that you will mostly use `auto`
-### If BAR doesn't converge
-#### Option 1: Add intermediate vdw/ele steps
+### Adding intermediate vdw/ele steps
 1. Edit vdwLambdas, eleLambdas, restraints in the setup block of `settings.ini` to include intermediate step(s)
 2. Run `auto`. goFEP will run `dynamic` on the intermediate steps, then run `bar` again 
-#### Option 2: Run dynamic for longer
+### Run dynamic for longer
 1. Run `dynamic all` to double the duration of your `arc` files (goFEP will run dynamic again with the same settings starting from the existing `arc` file) OR create a new `settings.ini` and edit the `dynamic` blocks manually for more granular control
 2. Run `bar`
 
