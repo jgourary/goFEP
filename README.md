@@ -13,12 +13,12 @@ goFEP is a command line application written in Go for the complete automation of
 ### Installing the Binary File
 ###### From Binary
 1. Copy a binary file from the releases section of this repository or `/home/jtg2769/software/gofep/releases` to a folder of your choice
-2. Add the folder to your path definition: `PATH=$PATH:/home/jtg2769/exampleFolder/`
+2. Add the folder containing the binary to your path definition: `PATH=$PATH:/home/jtg2769/exampleFolder/`
 ###### From Source
 1. Download and install Go (https://golang.org/dl) for your system
 2. Download the source files from this repository to a folder of your choice
 3. Convert the downloaded source files to a binary using `go build` (http://golang.org/pkg/go/build/)
-4. Add the folder to your path definition: `PATH=$PATH:/home/jtg2769/exampleFolder/`
+4. Add the folder containing the binary to your path definition: `PATH=$PATH:/home/jtg2769/exampleFolder/`
 ### Writing a Settings INI file
 * `settings.ini` contains all the parameters needed to run FEP
 * Commenting is allowed in this file using `#`
