@@ -348,6 +348,7 @@ func generateBARParams(paramsMap map[string][]string) barParameters {
 	return prm
 }
 
+// Check that all necessary parameters were specified in the INI
 func checkIfParamsSpecified(listOfKeys []string, paramsMap map[string][]string) {
 	var err error
 	for i := 0; i < len(listOfKeys); i++ {

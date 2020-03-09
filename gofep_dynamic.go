@@ -14,34 +14,34 @@ import (
 	"time"
 )
 
-func (ng nodeGroup) DynamicManager(genPrm *generalParameters, dynPrm []dynamicParameters, excludePreviouslyRun bool, resumeFromArc bool, maxNodes int) {
+// Called from main, manages overall process of running dynamic on multiple files with multiple parameter sets for multiple iterations
+func (ng nodeGroup) DynamicManager(genPrm *generalParameters, dynPrm []dynamicParameters, maxNodes int) {
 
 	start := time.Now()
 
 	// Get subdirectories to run dynamic inside
 	dynDirectory := filepath.Join(genPrm.targetDirectory,"dynamic")
-	subDirs := getDynamicSubDirectories(dynDirectory, excludePreviouslyRun)
-	numSubDirs := strconv.Itoa(len(subDirs))
-	numPrmSets :=  strconv.Itoa(len(dynPrm))
-	fmt.Println("\nPreparing to run AutoDynamic on " + numSubDirs + " files using " + numPrmSets + " parameter sets")
 
-	// remove old files if option is selected
-	for i := 0; i < len(subDirs); i++ {
-		if resumeFromArc == false {
-			removeDynamicOutputFiles(subDirs[i])
-		}
-	}
 
 	// Run autoDynamic using all dynamic parameter sets in order
 	for i := 0; i < len(dynPrm); i++ {
 		thisDynPrm := dynPrm[i]
 		fmt.Println("\nPreparing to run AutoDynamic with parameter set " + dynPrm[i].name + " for " + strconv.Itoa(thisDynPrm.repetitions) + " repetition(s)...")
-		for j := 0; j < thisDynPrm.repetitions; j++ {
-			fmt.Println("\n\nBeginning AutoDynamic repetition #" + strconv.Itoa(j+1) + " with parameter set \"" + dynPrm[i].name + "\"...\n")
-			t1 := time.Now()
-			ng.autoDynamic(genPrm, &dynPrm[i], subDirs, maxNodes, j) // j is repetition number w/ this param set
-			t2 := time.Now()
-			fmt.Println("\nAutoDynamic repetition #" + strconv.Itoa(j+1) + " with parameter set " + dynPrm[i].name + " finished in " + t2.Sub(t1).String())
+		for repNum := 0; repNum < thisDynPrm.repetitions; repNum++ {
+
+
+			subDirs := getValidDynDirs(dynDirectory, &thisDynPrm, repNum)
+			if len(subDirs) > 0 {
+				fmt.Println("\n\nBeginning AutoDynamic repetition #" + strconv.Itoa(repNum+1) + " with parameter set \"" + dynPrm[i].name + "\"...\n")
+				t1 := time.Now()
+				ng.autoDynamic(genPrm, &dynPrm[i], subDirs, maxNodes, repNum) // j is repetition number w/ this param set
+				t2 := time.Now()
+				fmt.Println("\nAutoDynamic repetition #" + strconv.Itoa(repNum+1) + " with parameter set " + dynPrm[i].name + " finished in " + t2.Sub(t1).String())
+			} else {
+				fmt.Println("\nSkipping AutoDynamic repetition #" + strconv.Itoa(repNum+1) + " with parameter set \"" + dynPrm[i].name + "\": this repetition is already complete for all subdirectories")
+			}
+
+
 		}
 	}
 
@@ -51,6 +51,7 @@ func (ng nodeGroup) DynamicManager(genPrm *generalParameters, dynPrm []dynamicPa
 
 }
 
+// Called by dynamicManager, runs dynamic on multiple files for multiple iterations with ONE parameter set
 func (ng nodeGroup) autoDynamic(genPrm *generalParameters, dynPrm *dynamicParameters, subDirs []string, maxNodes int, repetitionNum int) {
 
 
@@ -85,6 +86,8 @@ func (ng nodeGroup) autoDynamic(genPrm *generalParameters, dynPrm *dynamicParame
 	wg.Wait()
 
 }
+
+
 
 func (n node) dynamic(genPrm *generalParameters, dynPrm *dynamicParameters, subDir string, repetitionNum int, wg *sync.WaitGroup) {
 
@@ -128,8 +131,42 @@ func (n node) dynamic(genPrm *generalParameters, dynPrm *dynamicParameters, subD
 
 }
 
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Helper functions
+// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+func getValidDynDirs(dynDirectory string, dynPrm *dynamicParameters, repNum int) []string {
 
+	// Read in all files in dir
+	fileInfo, err := ioutil.ReadDir(dynDirectory)
+	if err != nil {
+		fmt.Println("failed to read directory: " + dynDirectory)
+		log.Fatal(err)
+	}
+	// Check that all files are directories and save to an array
+	numValidSubDirs := 0
+	validSubDirs := make([]string, len(fileInfo))
+
+	// Iterate through all items in directory
+	for i := 0; i < len(fileInfo); i++ {
+		// if item is a Dir (as it should be unless the end user tampered with the directory manually...)
+		if fileInfo[i].IsDir() {
+			// Calculate path to log file that would exist if this combination of directory / dynamic param set / iteration num had been run
+			logPath := filepath.Join(dynDirectory,fileInfo[i].Name(), dynPrm.name + "_" + strconv.Itoa(repNum) + ".log")
+			// see if log file exists
+			_, err = os.Stat(logPath)
+			// if said log file doesn't exist (error is non-nil)
+			if err != nil {
+				// add directory to list of approved directories
+				validSubDirs[numValidSubDirs] = filepath.Join(dynDirectory,fileInfo[i].Name())
+				numValidSubDirs++
+
+			}
+		}
+
+	}
+	return validSubDirs[0:numValidSubDirs]
+}
 
 func createTempDynamicScript(subDir string, xyzPath string, keyPath string, genPrm *generalParameters, dynPrm *dynamicParameters, n *node, repetitionNum string) string {
 	scriptName := dynPrm.name + "_" + repetitionNum + ".sh"
@@ -210,36 +247,6 @@ func getDynamicLaunchCommand(openMMHome string, xyzPath string, keyPath string, 
 	return cmd
 }
 
-// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Helper functions
-// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-func getDynamicSubDirectories(directory string, excludePreviouslyRun bool) []string {
-
-	// Read in all files in dir
-	fileInfo, err := ioutil.ReadDir(directory)
-	if err != nil {
-		fmt.Println("failed to read directory: " + directory)
-		log.Fatal(err)
-	}
-	// Check that all files are directories and save to an array
-	numSubDirs := len(fileInfo)
-	subDirs := make([]string, numSubDirs)
-	for i := 0; i < numSubDirs; i++ {
-		subDirs[i] = filepath.Join(directory,fileInfo[i].Name())
-		if !fileInfo[i].IsDir() {
-			newError := errors.New("directory contains loose files")
-			log.Fatal(newError)
-		}
-	}
-	// If excludePreviouslyRun, remove directories with arc files in them
-	if excludePreviouslyRun {
-		subDirs = getDirsWithoutFilesOfType(subDirs, "arc")
-	}
-
-	return subDirs
-}
-
 // Get xyz and key names from subdirectory and check that there aren't any issues with them
 // If arc, dyn files exist, set correct permissions
 func getDynamicFilePaths(subDir string) (string, string) {
@@ -292,7 +299,7 @@ func getDynamicFilePaths(subDir string) (string, string) {
 	return xyzPath, keyPath
 }
 
-// remove log, arc, dyn files from a directory
+/*// remove log, arc, dyn files from a directory
 func removeDynamicOutputFiles(dir string) {
 	// read directory
 	fileInfo, err := ioutil.ReadDir(dir)
@@ -315,7 +322,7 @@ func removeDynamicOutputFiles(dir string) {
 			}
 		}
 	}
-}
+}*/
 
 // Currently non-functional code to automatically generate scripts to kill all dynamic jobs
 

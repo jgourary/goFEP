@@ -11,10 +11,10 @@ import (
 	"strings"
 )
 
-const goFEPversion string = "1.0"
+const goFEPversion string = "1.1"
 const goFEPPlatform string = "Linux"
 const goFEPArch string = "amd64"
-const goFEPcompileDate string = "February 17, 2020"
+const goFEPcompileDate string = "February 26, 2020"
 const octalPermissions os.FileMode = 0777
 
 // gofep_results.go constants
@@ -69,7 +69,7 @@ func main() {
 		case "dynamic":
 
 			// Check that enough arguments are provided
-			if argsLen < 5 {
+			if argsLen < 4 {
 				err = errors.New("too few arguments have been provided to run goFEP dynamic. 4 arguments are required.\n " +
 					"If more assistance is needed with this issue, launch goFEP with no arguments to access built-in help function")
 				log.Fatal(err)
@@ -93,9 +93,9 @@ func main() {
 			switch args[3] {
 			// run dynamic
 			case "all":
-				ng.DynamicManager(&genPrm, dynPrm, false, true, numNodes)
+				ng.DynamicManager(&genPrm, dynPrm, numNodes)
 			case "new":
-				ng.DynamicManager(&genPrm, dynPrm, true, true, numNodes)
+				ng.DynamicManager(&genPrm, dynPrm, numNodes)
 			default:
 				err = errors.New("invalid argument \"" + args[3] + "\". Valid arguments following \"dynamic\" are: \"new\", \"all\".\n " +
 					"If more assistance is needed with this issue, launch goFEP with no arguments to access built-in help function")
@@ -153,7 +153,7 @@ func main() {
 			// Setup for dynamic
 			DynamicSetup(genPrm, setupPrm)
 			// Run dynamic
-			ng.DynamicManager(&genPrm, dynPrm, true, true, numNodes)
+			ng.DynamicManager(&genPrm, dynPrm, numNodes)
 
 			// If num nodes set to -1 (auto), set it to number of files to run (bar has 1 fewer file than dynamic, hence -1)
 			if numNodes == -1 {
@@ -185,7 +185,7 @@ func help() {
 	fmt.Println("i.e. \"ssh bme-nova\" THEN \"gofep path/to/xxx.ini xxx xxx ##\"")
 	fmt.Println()
 	fmt.Println("The first argument in a call to goFEP should always be a path to a configuration file")
-	fmt.Println("A sample configuration file with explanatory comments can be found at /home/jtg2769/software/gofep/test/settings.ini")
+	fmt.Println("A sample configuration file with explanatory comments can be found at /home/jtg2769/software/gofep/sampleInput/settings.ini")
 	fmt.Println()
 	fmt.Println("Second argument should always be a task to perform")
 	fmt.Println("Valid tasks are: \"setup\", \"dynamic\", \"bar\",\"auto\"")

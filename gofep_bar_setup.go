@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"time"
 )
 
@@ -21,12 +20,10 @@ func BARSetup(genPrm *generalParameters) {
 
 	// Get number of folders in dyn directory without arc files
 	fmt.Println("\nChecking dynamic folders to verify output...")
-	numBadFolders := len(getDynamicSubDirectories(dynDirectory, true))
-	// If num > 0, flag error that BAR should not be run yet
-	if numBadFolders > 0 {
-		err := errors.New(strconv.Itoa(numBadFolders) + " subfolders in dynamic folder are missing arc files. This must be resolved" +
-			"before BAR can be performed.")
-		log.Fatal(err)
+	// flag error that BAR should not be run yet
+	dynDirProb := isDynamicComplete(dynDirectory)
+	if dynDirProb != nil {
+		log.Fatal(dynDirProb)
 	}
 
 	// Get pairings of dynamic folders to run BAR between
@@ -39,6 +36,36 @@ func BARSetup(genPrm *generalParameters) {
 	t2 := time.Now()
 	fmt.Println("\nBAR Setup finished in " + t2.Sub(t1).String())
 
+}
+
+func isDynamicComplete(dynDirectory string) error {
+	// Read in all files in dir
+	dynDirs, err := ioutil.ReadDir(dynDirectory)
+	if err != nil {
+		fmt.Println("failed to read directory: " + dynDirectory)
+		log.Fatal(err)
+	}
+
+	// Iterate through all items in directory
+	for i := 0; i < len(dynDirs); i++ {
+		// if item is a Dir (as it should be unless the end user tampered with the directory manually...)
+		if dynDirs[i].IsDir() {
+			// Check each dir to verify it has an arc file
+			contents, err := ioutil.ReadDir(dynDirs[i].Name())
+			if err != nil {
+				fmt.Println("failed to read directory: " + dynDirs[i].Name())
+				log.Fatal(err)
+			}
+			for j := 0; j < len(contents); j++ {
+				if filepath.Ext(contents[j].Name()) == "arc" {
+					err = errors.New("cannot run BAR - subdirectory \"" + dynDirs[i].Name() + "\" is missing an arc file")
+					return err
+				}
+			}
+		}
+
+	}
+	return nil
 }
 
 // Pair up folders in dynamic directory alphabetically
@@ -75,6 +102,9 @@ func getBarPairings(directory string) [][]string {
 // Creates folders in BAR directory based on pairings
 func createBarFolders(directory string, barPairings [][]string) {
 	barDirectory := filepath.Join(directory, "bar")
+	// clear existing contents
+	removeContents(barDirectory)
+	// add new folders
 	for i:=0; i<len(barPairings); i++ {
 		folderPath := filepath.Join(barDirectory, barPairings[i][0] + "_" + barPairings[i][1])
 		err := os.MkdirAll(folderPath, octalPermissions)
