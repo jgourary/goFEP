@@ -3,15 +3,33 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
-	"strings"
+	"path/filepath"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Auxiliary: contains utility functions with usage in multiple parts of the program
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+func removeContents(dir string) error {
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+	names, err := d.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+	for _, name := range names {
+		err = os.RemoveAll(filepath.Join(dir, name))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 // Copy file copies a file from one location to another
 // This functionality is not supported by a built in function in go
@@ -60,48 +78,4 @@ func copyFile(destPath string, sourcePath string) error {
 	// return error, if any
 	return err
 }
-
-// Return a slice of directories without files of type "ext" from a slice of directories
-func getDirsWithoutFilesOfType(dirs []string, ext string) []string {
-
-	// Create array to store subdirs w/o xxx files
-	numSubDirs := len(dirs)
-	noXXXSubDirs := make([]string, numSubDirs)
-
-	// Create counter to record number of qualifying subdirectories found
-	numSubDirsWithoutXXX := 0
-
-	// Iterate through all subdirs
-	for i := 0; i < numSubDirs; i++ {
-
-		// read all files in subdir
-		fileInfo, err := ioutil.ReadDir(dirs[i])
-		if err != nil {
-			fmt.Println("failed to read directory: " + dirs[i])
-			log.Fatal(err)
-		}
-
-		// Search through all files and record if an "xxx" file is found
-		xxxFileInDir := false
-		for i := 0; i < len(fileInfo); i++ {
-			if strings.Split(fileInfo[i].Name(), ".")[1] == ext {
-				xxxFileInDir = true
-			}
-		}
-		// If no "xxx" files in dir, add dir to relevant array
-		if !xxxFileInDir {
-			noXXXSubDirs[numSubDirsWithoutXXX] = dirs[i]
-			// Iterate counter of qualifying subdirectories
-			numSubDirsWithoutXXX++
-		}
-	}
-
-	// Return array of subdirs w/o "xxx" files excluding empty entries
-	if numSubDirsWithoutXXX > 0 {
-		return noXXXSubDirs[:numSubDirsWithoutXXX]
-	} else {
-		return []string{}
-	}
-}
-
 
