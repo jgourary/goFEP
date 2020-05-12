@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -16,15 +15,15 @@ func BARSetup(genPrm *generalParameters) {
 	fmt.Println("\nBeginning BAR setup in directory: " + genPrm.targetDirectory)
 	t1 := time.Now()
 
-	dynDirectory := filepath.Join(genPrm.targetDirectory,"dynamic")
+	//dynDirectory := filepath.Join(genPrm.targetDirectory,"dynamic")
 
 	// Get number of folders in dyn directory without arc files
 	fmt.Println("\nChecking dynamic folders to verify output...")
 	// flag error that BAR should not be run yet
-	dynDirProb := isDynamicComplete(dynDirectory)
+	/*dynDirProb := isDynamicComplete(dynDirectory)
 	if dynDirProb != nil {
 		log.Fatal(dynDirProb)
-	}
+	}*/
 
 	// Get pairings of dynamic folders to run BAR between
 	fmt.Println("\nCalculating alphabetical pairings between dynamic folders...")
@@ -38,7 +37,7 @@ func BARSetup(genPrm *generalParameters) {
 
 }
 
-func isDynamicComplete(dynDirectory string) error {
+/*func isDynamicComplete(dynDirectory string) error {
 	// Read in all files in dir
 	dynDirs, err := ioutil.ReadDir(dynDirectory)
 	if err != nil {
@@ -48,6 +47,7 @@ func isDynamicComplete(dynDirectory string) error {
 
 	// Iterate through all items in directory
 	for i := 0; i < len(dynDirs); i++ {
+		thisDir := filepath.Join(dynDirectory, dynDirs[i])
 		// if item is a Dir (as it should be unless the end user tampered with the directory manually...)
 		if dynDirs[i].IsDir() {
 			// Check each dir to verify it has an arc file
@@ -66,7 +66,7 @@ func isDynamicComplete(dynDirectory string) error {
 
 	}
 	return nil
-}
+}*/
 
 // Pair up folders in dynamic directory alphabetically
 func getBarPairings(directory string) [][]string {
