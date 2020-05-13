@@ -40,7 +40,7 @@ You can activate the built-in help function by running goFEP with no arguments: 
 1. the path to `settings.ini`
 ###### Example Usage
 `gofep /path/to/settings.ini setup`
-### dynamic
+### dynamic (deprecated)
 * `dynamic` runs Tinker-OpenMM's dynamic_omm.x executable on each directory created by `setup` in parallel on different cluster nodes
 ###### Arguments
 1. the path to `settings.ini`
@@ -50,7 +50,7 @@ You can activate the built-in help function by running goFEP with no arguments: 
 3. the maximum number of nodes to run on. If set to `-1`, it will try to assign each job to a different node.
 ###### Example Usage
 `gofep /path/to/settings.ini dynamic new 20`
-### bar
+### bar (deprecated)
 * `bar` runs Tinker-OpenMM's bar_omm.x executable (parts 1 & 2) between each directory created by `dynamic` in parallel on different cluster nodes, then writes the forward and backward free energy and error to `results.txt` in the main directory
 ###### Arguments
 1. the path to `settings.ini`
