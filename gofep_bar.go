@@ -50,8 +50,7 @@ func (ng nodeGroup) BARManager(genPrm *generalParameters, barPrm *barParameters,
 // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // AutoBAR1, managed by BARManager, runs BAR1 in all subdirectories provided in parallel on different cluster nodes
-func (ng nodeGroup) autoBAR1(subDirs []string,  genPrm *generalParameters, barPrm *barParameters, maxNodes int) {
-
+func (ng nodeGroup) autoBAR1(subDirs []string, genPrm *generalParameters, barPrm *barParameters, maxNodes int) {
 
 	// Get nodes to run BAR1 on
 	fmt.Print("\nLooking for " + strconv.Itoa(maxNodes) + " available nodes...")
@@ -72,7 +71,7 @@ func (ng nodeGroup) autoBAR1(subDirs []string,  genPrm *generalParameters, barPr
 	fmt.Println("\nBeginning AutoBAR1 run on " + strconv.Itoa(len(subDirs)) + " files...\n")
 	for i := 0; i < len(subDirs); i++ {
 		// Determine which node to run BAR1 on by iterating through the list of free nodes
-		nodeIndex := ng.freeNodeIndices[i % len(ng.freeNodeIndices)]
+		nodeIndex := ng.freeNodeIndices[i%len(ng.freeNodeIndices)]
 		// Add one to wait group
 		wg.Add(1)
 		// Launch go routine (parallel processing) to run BAR1 on selected node in subDir[i]
@@ -93,14 +92,15 @@ func (n node) BAR1(subBarDir string, genPrm *generalParameters, barPrm *barParam
 		fmt.Println("Failed to find file paths of ARC files to run BAR 1 with")
 		log.Fatal(err)
 	}
-	arc1Path := arcFilePaths[0]; arc2Path := arcFilePaths[1]
+	arc1Path := arcFilePaths[0]
+	arc2Path := arcFilePaths[1]
 
 	// By default, Tinker writes BAR1 output to a file in the same directory as the first ARC file with the same name
 	defOutputPath := strings.TrimSuffix(arc1Path, "arc") + "bar"
 	// We would like to move output from there (targetDirectory/dynamic/subDynDir)
 	// to the directory we are running bar in (targetDirectory/bar/subBarDir) for organizational purposes
 	intendedBaseFileName := strings.TrimSuffix(filepath.Base(arc1Path), "arc")
-	intendedOutputPath := filepath.Join(subBarDir,intendedBaseFileName + "bar")
+	intendedOutputPath := filepath.Join(subBarDir, intendedBaseFileName+"bar")
 
 	// Write script to run BAR 1 and save to BAR subdirectory
 	bar1Script := createTempBAR1Script(subBarDir, arc1Path, arc2Path, genPrm, barPrm, &n)
@@ -152,7 +152,7 @@ func (n node) BAR1(subBarDir string, genPrm *generalParameters, barPrm *barParam
 func createTempBAR1Script(subBarDir string, arc1Path string, arc2Path string, genPrm *generalParameters, barPrm *barParameters, n *node) string {
 
 	// Write temp bash script in dir
-	filePath := filepath.Join(subBarDir,"bar1.sh")
+	filePath := filepath.Join(subBarDir, "bar1.sh")
 	file, err := os.Create(filePath)
 	if err != nil {
 		fmt.Println("failed to create temporary BAR 1 bash script: " + filePath)
@@ -167,22 +167,22 @@ func createTempBAR1Script(subBarDir string, arc1Path string, arc2Path string, ge
 	}
 
 	// get log path
-	logPath :=  filepath.Join(subBarDir,"bar1.log")
+	logPath := filepath.Join(subBarDir, "bar1.log")
 
 	// Start with header
 	_, err = file.WriteString("#!/bin/bash\n")
 	// Begin here document (all following command will be performed inside node)
 	_, err = file.WriteString("ssh -o \"StrictHostKeyChecking no\" " + n.name + " << END\n")
 	// Source universally needed files
-	_, err= file.WriteString("\tsource " + genPrm.intelSource + "\n")
+	_, err = file.WriteString("\tsource " + genPrm.intelSource + "\n")
 	// Source gpu dependant files
 	var openMMHome string
 	// Source CUDA files and get openMMHome variable
-	if n.cardGeneration == "Pascal" || n.cardGeneration == "Maxwell" {
-		_, err= file.WriteString("\tsource " + genPrm.cuda8Source + "\n")
-		openMMHome = genPrm.cuda8Home
+	if n.cardGeneration == "Ampere" {
+		_, err = file.WriteString("\tsource " + genPrm.cuda11Source + "\n")
+		openMMHome = genPrm.cuda11Home
 	} else if n.cardGeneration == "Turing" {
-		_, err= file.WriteString("\tsource " + genPrm.cuda10Source + "\n")
+		_, err = file.WriteString("\tsource " + genPrm.cuda10Source + "\n")
 		openMMHome = genPrm.cuda10Home
 	} else {
 		err = errors.New("card generation unrecognized - unsure which files to source. Recognized generations are " +
@@ -190,11 +190,11 @@ func createTempBAR1Script(subBarDir string, arc1Path string, arc2Path string, ge
 		log.Fatal(err)
 	}
 	// Get card number
-	_, err= file.WriteString("\texport CUDA_VISIBLE_DEVICES=" + n.cardNumber + "\n")
+	_, err = file.WriteString("\texport CUDA_VISIBLE_DEVICES=" + n.cardNumber + "\n")
 	// Write command to launch bar1
-	_, err= file.WriteString("\t" + filepath.Join(openMMHome, "bar_omm.x") + " 1 " + arc1Path + " " + barPrm.temp + " " + arc2Path + " " + barPrm.temp + " > " + logPath + " \n")
+	_, err = file.WriteString("\t" + filepath.Join(openMMHome, "bar_omm.x") + " 1 " + arc1Path + " " + barPrm.temp + " " + arc2Path + " " + barPrm.temp + " > " + logPath + " \n")
 	// end here document
-	_, err= file.WriteString("END")
+	_, err = file.WriteString("END")
 
 	// Check error for all above writes
 	if err != nil {
@@ -232,7 +232,7 @@ func (ng nodeGroup) autoBAR2(subDirs []string, genPrm *generalParameters, barPrm
 	fmt.Println("\nBeginning AutoBAR2 run on " + strconv.Itoa(len(subDirs)) + " files...\n")
 	for i := 0; i < len(subDirs); i++ {
 		// Determine which node to run BAR1 on by iterating through the list of free nodes
-		nodeIndex := ng.freeNodeIndices[i % maxNodes]
+		nodeIndex := ng.freeNodeIndices[i%maxNodes]
 		// Add one to wait group
 		wg.Add(1)
 		// run BAR2 in parallel on node selected using go routines
@@ -259,7 +259,7 @@ func (n node) BAR2(subBarDir string, genPrm *generalParameters, barPrm *barParam
 	tempFilePath := createTempBAR2Script(barPath, frameCount, genPrm, barPrm, &n)
 
 	// Run that script
-	out, err := exec.Command("sh",tempFilePath).CombinedOutput()
+	out, err := exec.Command("sh", tempFilePath).CombinedOutput()
 	// Report results to user
 	if err != nil {
 		fmt.Print("Error encountered on files in subdirectory " + subBarDir + " using node " + n.name)
@@ -294,7 +294,7 @@ func (n node) BAR2(subBarDir string, genPrm *generalParameters, barPrm *barParam
 // Writes bash script to run BAR2 on node provided on BAR2 file provided
 func createTempBAR2Script(barPath string, frameCount string, genPrm *generalParameters, barPrm *barParameters, n *node) string {
 
-	scriptPath := filepath.Join(filepath.Dir(barPath),"bar2.sh")
+	scriptPath := filepath.Join(filepath.Dir(barPath), "bar2.sh")
 	// Write temp bash script in dir
 	tempFile, err := os.Create(scriptPath)
 	if err != nil {
@@ -310,22 +310,22 @@ func createTempBAR2Script(barPath string, frameCount string, genPrm *generalPara
 	}
 
 	// get log path
-	logPath :=  filepath.Join(filepath.Dir(barPath),"bar2.log")
+	logPath := filepath.Join(filepath.Dir(barPath), "bar2.log")
 
 	// Start with header
 	_, err = tempFile.WriteString("#!/bin/bash\n")
 	// Begin here document (all following command will be performed inside node)
 	_, err = tempFile.WriteString("ssh -o \"StrictHostKeyChecking no\" " + n.name + " << END\n")
 	// Source universally needed files
-	_, err= tempFile.WriteString("\tsource " + genPrm.intelSource + "\n")
+	_, err = tempFile.WriteString("\tsource " + genPrm.intelSource + "\n")
 	// Source gpu dependant files
 	var openMMHome string
 	// Source CUDA files and get openMMHome variable
-	if n.cardGeneration == "Pascal" || n.cardGeneration == "Maxwell" {
-		_, err= tempFile.WriteString("\tsource " + genPrm.cuda8Source + "\n")
-		openMMHome = genPrm.cuda8Home
+	if n.cardGeneration == "Ampere" {
+		_, err = tempFile.WriteString("\tsource " + genPrm.cuda11Source + "\n")
+		openMMHome = genPrm.cuda11Home
 	} else if n.cardGeneration == "Turing" {
-		_, err= tempFile.WriteString("\tsource " + genPrm.cuda10Source + "\n")
+		_, err = tempFile.WriteString("\tsource " + genPrm.cuda10Source + "\n")
 		openMMHome = genPrm.cuda10Home
 	} else {
 		err = errors.New("card generation unrecognized - unsure which files to source. Recognized generations are " +
@@ -333,12 +333,12 @@ func createTempBAR2Script(barPath string, frameCount string, genPrm *generalPara
 		log.Fatal(err)
 	}
 	// Get card number
-	_, err= tempFile.WriteString("\texport CUDA_VISIBLE_DEVICES=" + n.cardNumber + "\n")
+	_, err = tempFile.WriteString("\texport CUDA_VISIBLE_DEVICES=" + n.cardNumber + "\n")
 	// Write command to launch bar2
-	_, err= tempFile.WriteString("\t" + filepath.Join(openMMHome,"bar_omm.x") + " 2 " + barPath + " 1 " + frameCount + " " + barPrm.frameInterval +
+	_, err = tempFile.WriteString("\t" + filepath.Join(openMMHome, "bar_omm.x") + " 2 " + barPath + " 1 " + frameCount + " " + barPrm.frameInterval +
 		" 1 " + frameCount + " " + barPrm.frameInterval + " > " + logPath + " \n")
 	// end here document
-	_, err= tempFile.WriteString("END")
+	_, err = tempFile.WriteString("END")
 
 	// Check error for all above writes
 	if err != nil {
@@ -381,7 +381,7 @@ func getBAR1FilePaths(directory string, subBarDir string) ([]string, error) {
 	barDirName := filepath.Base(subBarDir)
 	// Get the names of the 2 dynamic directories corresponding to the bar directory
 	dynDirNames := strings.Split(barDirName, "_")
-	dynDirs := [2]string {filepath.Join(dynDir,dynDirNames[0]), filepath.Join(dynDir ,dynDirNames[1])}
+	dynDirs := [2]string{filepath.Join(dynDir, dynDirNames[0]), filepath.Join(dynDir, dynDirNames[1])}
 	// arcPaths will hold the paths to the 2 arc files
 	arcPaths := make([]string, len(dynDirs))
 
@@ -416,7 +416,7 @@ func getBAR1FilePaths(directory string, subBarDir string) ([]string, error) {
 			err = errors.New("missing or multiple ARC file(s) in directory " + dynDirs[i])
 		}
 		// Get arc paths by adding arc name to directory name
-		arcPaths[i] = filepath.Join(dynDirs[i],arcName)
+		arcPaths[i] = filepath.Join(dynDirs[i], arcName)
 	}
 	// return arc paths
 	return arcPaths, err
@@ -458,7 +458,7 @@ func getBAR2FilePath(subDir string) (string, error) {
 // Get subdirectories to run BAR inside
 func getBARSubDirs(directory string) ([]string, error) {
 	// get name of directory that hold bar subdirectories
-	barDir := filepath.Join(directory,"bar")
+	barDir := filepath.Join(directory, "bar")
 	// read it
 	fileInfo, err := ioutil.ReadDir(barDir)
 	if err != nil {
@@ -479,7 +479,7 @@ func getBARSubDirs(directory string) ([]string, error) {
 	subDirs := make([]string, dirCounter)
 	// save paths to slice
 	for i := 0; i < len(fileInfo); i++ {
-		subDirs[i] = filepath.Join(barDir,fileInfo[i].Name())
+		subDirs[i] = filepath.Join(barDir, fileInfo[i].Name())
 	}
 	// return slice of paths
 	return subDirs, err

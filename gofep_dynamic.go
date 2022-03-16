@@ -20,15 +20,13 @@ func (ng nodeGroup) DynamicManager(genPrm *generalParameters, dynPrm []dynamicPa
 	start := time.Now()
 
 	// Get subdirectories to run dynamic inside
-	dynDirectory := filepath.Join(genPrm.targetDirectory,"dynamic")
-
+	dynDirectory := filepath.Join(genPrm.targetDirectory, "dynamic")
 
 	// Run autoDynamic using all dynamic parameter sets in order
 	for i := 0; i < len(dynPrm); i++ {
 		thisDynPrm := dynPrm[i]
 		fmt.Println("\nPreparing to run AutoDynamic with parameter set " + dynPrm[i].name + " for " + strconv.Itoa(thisDynPrm.repetitions) + " repetition(s)...")
 		for repNum := 0; repNum < thisDynPrm.repetitions; repNum++ {
-
 
 			subDirs := getValidDynDirs(dynDirectory, &thisDynPrm, repNum)
 			if len(subDirs) > 0 {
@@ -41,7 +39,6 @@ func (ng nodeGroup) DynamicManager(genPrm *generalParameters, dynPrm []dynamicPa
 				fmt.Println("\nSkipping AutoDynamic repetition #" + strconv.Itoa(repNum+1) + " with parameter set \"" + dynPrm[i].name + "\": this repetition is already complete for all subdirectories")
 			}
 
-
 		}
 	}
 
@@ -53,8 +50,6 @@ func (ng nodeGroup) DynamicManager(genPrm *generalParameters, dynPrm []dynamicPa
 
 // Called by dynamicManager, runs dynamic on multiple files for multiple iterations with ONE parameter set
 func (ng nodeGroup) autoDynamic(genPrm *generalParameters, dynPrm *dynamicParameters, subDirs []string, maxNodes int, repetitionNum int) {
-
-
 
 	// Get nodes to run dynamic on
 	fmt.Print("\nLooking for " + strconv.Itoa(maxNodes) + " available nodes...")
@@ -75,7 +70,7 @@ func (ng nodeGroup) autoDynamic(genPrm *generalParameters, dynPrm *dynamicParame
 	// iterate through all subDirs
 	for i := 0; i < len(subDirs); i++ {
 		// get index of node to run dynamic on by iterating through freeNodeIndices w/ constraint of not exceeding maxNodes
-		nodeIndex := ng.freeNodeIndices[i % maxNodes]
+		nodeIndex := ng.freeNodeIndices[i%maxNodes]
 		// Add one to wait group
 		wg.Add(1)
 		// Create go routine to run dynamic in that subDir using that node
@@ -86,8 +81,6 @@ func (ng nodeGroup) autoDynamic(genPrm *generalParameters, dynPrm *dynamicParame
 	wg.Wait()
 
 }
-
-
 
 func (n node) dynamic(genPrm *generalParameters, dynPrm *dynamicParameters, subDir string, repetitionNum int, wg *sync.WaitGroup) {
 
@@ -105,7 +98,7 @@ func (n node) dynamic(genPrm *generalParameters, dynPrm *dynamicParameters, subD
 		fmt.Println(err)
 
 		// get filepath to write error to
-		outFilePath := filepath.Join(subDir, dynPrm.name + repetitionNumStr + ".err")
+		outFilePath := filepath.Join(subDir, dynPrm.name+repetitionNumStr+".err")
 		// create file to store err
 		outFile, err := os.Create(outFilePath)
 		if err != nil {
@@ -152,13 +145,13 @@ func getValidDynDirs(dynDirectory string, dynPrm *dynamicParameters, repNum int)
 		// if item is a Dir (as it should be unless the end user tampered with the directory manually...)
 		if fileInfo[i].IsDir() {
 			// Calculate path to log file that would exist if this combination of directory / dynamic param set / iteration num had been run
-			logPath := filepath.Join(dynDirectory,fileInfo[i].Name(), dynPrm.name + "_" + strconv.Itoa(repNum) + ".log")
+			logPath := filepath.Join(dynDirectory, fileInfo[i].Name(), dynPrm.name+"_"+strconv.Itoa(repNum)+".log")
 			// see if log file exists
 			_, err = os.Stat(logPath)
 			// if said log file doesn't exist (error is non-nil)
 			if err != nil {
 				// add directory to list of approved directories
-				validSubDirs[numValidSubDirs] = filepath.Join(dynDirectory,fileInfo[i].Name())
+				validSubDirs[numValidSubDirs] = filepath.Join(dynDirectory, fileInfo[i].Name())
 				numValidSubDirs++
 
 			}
@@ -186,7 +179,7 @@ func createTempDynamicScript(subDir string, xyzPath string, keyPath string, genP
 	}
 
 	// get log path
-	logPath := filepath.Join(filepath.Dir(xyzPath), dynPrm.name + "_" + repetitionNum + ".log")
+	logPath := filepath.Join(filepath.Dir(xyzPath), dynPrm.name+"_"+repetitionNum+".log")
 
 	// Write file contents
 
@@ -195,15 +188,15 @@ func createTempDynamicScript(subDir string, xyzPath string, keyPath string, genP
 	// Begin here document (all following command will be performed inside node)
 	_, err = tempFile.WriteString("ssh -o \"StrictHostKeyChecking no\" " + n.name + " << END\n")
 	// Source universally needed files
-	_, err= tempFile.WriteString("\tsource " + genPrm.intelSource + "\n")
+	_, err = tempFile.WriteString("\tsource " + genPrm.intelSource + "\n")
 	// Source gpu dependant files
 	var openMMHome string
 	// Source CUDA files and get openMMHome variable
-	if n.cardGeneration == "Pascal" || n.cardGeneration == "Maxwell" {
-		_, err= tempFile.WriteString("\tsource " + genPrm.cuda8Source + "\n")
-		openMMHome = genPrm.cuda8Home
+	if n.cardGeneration == "Ampere" {
+		_, err = tempFile.WriteString("\tsource " + genPrm.cuda11Source + "\n")
+		openMMHome = genPrm.cuda11Home
 	} else if n.cardGeneration == "Turing" {
-		_, err= tempFile.WriteString("\tsource " + genPrm.cuda10Source + "\n")
+		_, err = tempFile.WriteString("\tsource " + genPrm.cuda10Source + "\n")
 		openMMHome = genPrm.cuda10Home
 	} else {
 		err = errors.New("card generation unrecognized - unsure which files to source. Recognized generations are " +
@@ -211,11 +204,11 @@ func createTempDynamicScript(subDir string, xyzPath string, keyPath string, genP
 		log.Fatal(err)
 	}
 	// Get card number
-	_, err= tempFile.WriteString("\texport CUDA_VISIBLE_DEVICES=" + n.cardNumber + "\n")
+	_, err = tempFile.WriteString("\texport CUDA_VISIBLE_DEVICES=" + n.cardNumber + "\n")
 	// Write command to launch dynamic
-	_, err= tempFile.WriteString(getDynamicLaunchCommand(openMMHome,xyzPath,keyPath,logPath,dynPrm))
+	_, err = tempFile.WriteString(getDynamicLaunchCommand(openMMHome, xyzPath, keyPath, logPath, dynPrm))
 	// end here document
-	_, err= tempFile.WriteString("END")
+	_, err = tempFile.WriteString("END")
 
 	// Check error for all above writes
 	if err != nil {
@@ -230,7 +223,7 @@ func createTempDynamicScript(subDir string, xyzPath string, keyPath string, genP
 
 // Get ensemble dependent command to launch tinker dynamic
 func getDynamicLaunchCommand(openMMHome string, xyzPath string, keyPath string, logPath string, dynPrm *dynamicParameters) string {
-	basecmd :=  "\t" + filepath.Join(openMMHome, "dynamic_omm.x") + " " + xyzPath + " -k " + keyPath + " " + dynPrm.numSteps +
+	basecmd := "\t" + filepath.Join(openMMHome, "dynamic_omm.x") + " " + xyzPath + " -k " + keyPath + " " + dynPrm.numSteps +
 		" " + dynPrm.stepInterval + " " + dynPrm.saveInterval + " " + dynPrm.ensemble
 	var cmd string
 	switch dynPrm.ensemble {
@@ -271,18 +264,18 @@ func getDynamicFilePaths(subDir string) (string, string) {
 			xyzPath = filepath.Join(subDir, fileInfo[i].Name())
 			numXYZ++
 		} else if fileExt == "key" {
-			keyPath = filepath.Join(subDir,fileInfo[i].Name())
+			keyPath = filepath.Join(subDir, fileInfo[i].Name())
 			numKEY++
 		} else if fileExt == "arc" {
-			arcPath = filepath.Join(subDir,fileInfo[i].Name())
-			err = os.Chmod(arcPath,octalPermissions)
+			arcPath = filepath.Join(subDir, fileInfo[i].Name())
+			err = os.Chmod(arcPath, octalPermissions)
 			if err != nil {
 				fmt.Println("Failed to update file permissions for arc file: " + arcPath)
 				log.Fatal(err)
 			}
 		} else if fileExt == "dyn" {
-			dynPath = filepath.Join(subDir,fileInfo[i].Name())
-			err = os.Chmod(dynPath,octalPermissions)
+			dynPath = filepath.Join(subDir, fileInfo[i].Name())
+			err = os.Chmod(dynPath, octalPermissions)
 			if err != nil {
 				fmt.Println("Failed to update permissions for dyn file: " + dynPath)
 				log.Fatal(err)

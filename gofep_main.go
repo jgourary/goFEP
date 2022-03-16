@@ -88,7 +88,6 @@ func main() {
 			// Get nodes from node INI
 			ng := getNodeGroup(&genPrm)
 
-
 			// args[3] = call type
 			switch args[3] {
 			// run dynamic
@@ -116,7 +115,7 @@ func main() {
 			}
 			// If num nodes set to -1 (auto), set it to number of files to run (bar has 1 fewer file than dynamic, hence -1)
 			if numNodes == -1 {
-				numNodes = len(setupPrm.vdw)-1
+				numNodes = len(setupPrm.vdw) - 1
 			}
 
 			// Setup BAR folders
@@ -157,7 +156,7 @@ func main() {
 
 			// If num nodes set to -1 (auto), set it to number of files to run (bar has 1 fewer file than dynamic, hence -1)
 			if numNodes == -1 {
-				numNodes = len(setupPrm.vdw)-1
+				numNodes = len(setupPrm.vdw) - 1
 			}
 			// Setup for BAR
 			BARSetup(&genPrm)
@@ -176,7 +175,7 @@ func main() {
 func help() {
 	fmt.Println()
 	fmt.Println("goFEP Beta v" + goFEPversion)
-	fmt.Println("Compiled " + goFEPcompileDate + " for " + goFEPPlatform + "-" + goFEPArch )
+	fmt.Println("Compiled " + goFEPcompileDate + " for " + goFEPPlatform + "-" + goFEPArch)
 	fmt.Println("Justin Gourary | jtgourary@utexas.edu")
 	fmt.Println("Univ. of Texas at Austin | Dept. of Biomedical Eng.")
 	fmt.Println("Pengyu Ren Lab")

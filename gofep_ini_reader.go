@@ -118,7 +118,9 @@ func getSanitizedINIData(path string) ([]string, error) {
 		// remove comment blocks from line
 		line := cleanLine(scanner.Text())
 		// if line has content after cleaning, append to lines to return
-		if len(line) > 0 { lines = append(lines, line) }
+		if len(line) > 0 {
+			lines = append(lines, line)
+		}
 	}
 	return lines, scanner.Err()
 }
@@ -131,7 +133,11 @@ func cleanLine(line string) string {
 	for i := 0; i < len(line); i++ {
 		// if byte = comment byte, return line up until that byte
 		if line[i] == commentByte {
-			if i > 1 { return line[0:i] } else { return "" }
+			if i > 1 {
+				return line[0:i]
+			} else {
+				return ""
+			}
 		}
 	}
 	// if no comments found, return whole line
@@ -141,7 +147,7 @@ func cleanLine(line string) string {
 // get all brace enclosed blocks in cleaned ini
 func getBlocks(lines []string) []block {
 	// valid block literals
-	blockLiterals := []string {"general", "setup", "dynamic", "bar"}
+	blockLiterals := []string{"general", "setup", "dynamic", "bar"}
 
 	// Find all instances of these block literals at the beginning of lines and save the line numbers they were seen at
 	var dividers []int
@@ -159,13 +165,15 @@ func getBlocks(lines []string) []block {
 	// make a block struct for each divider
 	blocks := make([]block, len(dividers))
 	// for each block, copy data between dividers into the struct
-	for i := 0 ; i < len(dividers); i++ {
+	for i := 0; i < len(dividers); i++ {
 		blocks[i].blockType = strings.Fields(lines[dividers[i]])[0]
-		startSlice := dividers[i]+1
-		if i < len(dividers) - 1 {
+		startSlice := dividers[i] + 1
+		if i < len(dividers)-1 {
 			endSlice := dividers[i+1] - 1
 			blocks[i].lines = lines[startSlice:endSlice]
-		} else {blocks[i].lines = lines[startSlice:] }
+		} else {
+			blocks[i].lines = lines[startSlice:]
+		}
 
 	}
 	return blocks
@@ -222,7 +230,7 @@ func generateDynamicParams(paramsMap map[string][]string) dynamicParameters {
 	prm := dynamicParameters{}
 
 	// Check if parameters were specified. If not, raise fatal error
-	listOfKeys := []string {"name", "order", "repetitions", "ensemble", "stepInterval", "saveInterval", "simulationTime"}
+	listOfKeys := []string{"name", "order", "repetitions", "ensemble", "stepInterval", "saveInterval", "simulationTime"}
 	checkIfParamsSpecified(listOfKeys, paramsMap)
 
 	// Set block name
@@ -249,7 +257,7 @@ func generateDynamicParams(paramsMap map[string][]string) dynamicParameters {
 	// Set block ensemble
 	prm.ensemble = paramsMap["ensemble"][0]
 	if prm.ensemble != "1" && prm.ensemble != "2" && prm.ensemble != "3" && prm.ensemble != "4" {
-		err = errors.New("ensemble in dynamic block \"" +prm.name + " must be set to \"1\", \"2\", \"3\", or \"4\"")
+		err = errors.New("ensemble in dynamic block \"" + prm.name + " must be set to \"1\", \"2\", \"3\", or \"4\"")
 		log.Fatal(err)
 	}
 
@@ -260,7 +268,7 @@ func generateDynamicParams(paramsMap map[string][]string) dynamicParameters {
 			log.Fatal(err)
 		}
 		prm.temp = paramsMap["temp"][0]
-		_, err := strconv.ParseFloat(prm.temp,64)
+		_, err := strconv.ParseFloat(prm.temp, 64)
 		if err != nil {
 			fmt.Println("Temperature parameter set in dynamic block: \"" + prm.name + "\" of \"" + prm.temp + "\" could not be parsed as float and thus Tinker would likely fail")
 			log.Fatal(err)
@@ -274,7 +282,7 @@ func generateDynamicParams(paramsMap map[string][]string) dynamicParameters {
 			log.Fatal(err)
 		}
 		prm.pressure = paramsMap["pressure"][0]
-		_, err := strconv.ParseFloat(prm.pressure,64)
+		_, err := strconv.ParseFloat(prm.pressure, 64)
 		if err != nil {
 			fmt.Println("Pressure parameter set in dynamic block: \"" + prm.name + "\" of \"" + prm.pressure + "\" could not be parsed as float and thus Tinker would likely fail")
 			log.Fatal(err)
@@ -304,7 +312,7 @@ func generateDynamicParams(paramsMap map[string][]string) dynamicParameters {
 		fmt.Println("Failed to convert \"stepInterval\" parameter in \"dynamic\" block from string to float")
 		log.Fatal(err)
 	}
-	prm.numSteps = strconv.Itoa(int(1e6 * simTime / stepInt + 0.5))
+	prm.numSteps = strconv.Itoa(int(1e6*simTime/stepInt + 0.5))
 
 	return prm
 }
@@ -315,7 +323,7 @@ func generateBARParams(paramsMap map[string][]string) barParameters {
 	prm := barParameters{}
 
 	// Check if other parameters were specified. If not, raise fatal error
-	listOfKeys := []string {"frameInterval", "temp"}
+	listOfKeys := []string{"frameInterval", "temp"}
 	checkIfParamsSpecified(listOfKeys, paramsMap)
 
 	// Set frame interval
@@ -332,18 +340,17 @@ func generateBARParams(paramsMap map[string][]string) barParameters {
 	}
 	prm.temp = paramsMap["temp"][0]
 
-	_, err = strconv.ParseFloat(prm.temp,64)
+	_, err = strconv.ParseFloat(prm.temp, 64)
 	if err != nil {
-		fmt.Println("Temperature parameter set in bar block: \"" + prm.temp +"\" could not be parsed as float and thus Tinker would likely fail")
+		fmt.Println("Temperature parameter set in bar block: \"" + prm.temp + "\" could not be parsed as float and thus Tinker would likely fail")
 		log.Fatal(err)
 	}
 
 	_, err = strconv.Atoi(prm.frameInterval)
 	if err != nil {
-		fmt.Println("Frame interval parameter set in bar block: \"" + prm.frameInterval +"\" could not be parsed as int and thus Tinker would likely fail")
+		fmt.Println("Frame interval parameter set in bar block: \"" + prm.frameInterval + "\" could not be parsed as int and thus Tinker would likely fail")
 		log.Fatal(err)
 	}
-
 
 	return prm
 }
@@ -367,7 +374,7 @@ func generateGenParams(paramsMap map[string][]string) generalParameters {
 	_, ok := paramsMap["targetDirectory"]
 	if ok {
 		// Check if other parameters were specified. If not, raise fatal error
-		listOfKeys := []string {"xyz", "key", "prm", "nodeINI"}
+		listOfKeys := []string{"xyz", "key", "prm", "nodeINI"}
 		checkIfParamsSpecified(listOfKeys, paramsMap)
 
 		// prm.targetDirectory is specified - xyz/key/prm paths are assumed to be absolute paths
@@ -378,7 +385,7 @@ func generateGenParams(paramsMap map[string][]string) generalParameters {
 		prm.nodeIniPath = paramsMap["nodeINI"][0]
 	} else {
 		// Check if other parameters were specified. If not, raise fatal error
-		listOfKeys := []string {"xyz", "key", "prm", "nodeINI"}
+		listOfKeys := []string{"xyz", "key", "prm", "nodeINI"}
 		checkIfParamsSpecified(listOfKeys, paramsMap)
 
 		// prm.targetDirectory is not specified - assumed to be current working directory - xyz/key/prm paths are
@@ -388,27 +395,27 @@ func generateGenParams(paramsMap map[string][]string) generalParameters {
 			fmt.Println("Error while setting target directory to current working directory")
 			log.Fatal(err)
 		}
-		prm.xyzPath = filepath.Join(prm.targetDirectory,paramsMap["xyz"][0])
-		prm.keyPath = filepath.Join(prm.targetDirectory,paramsMap["key"][0])
-		prm.prmPath = filepath.Join(prm.targetDirectory,paramsMap["prm"][0])
-		prm.nodeIniPath = filepath.Join(prm.targetDirectory,paramsMap["nodeINI"][0])
+		prm.xyzPath = filepath.Join(prm.targetDirectory, paramsMap["xyz"][0])
+		prm.keyPath = filepath.Join(prm.targetDirectory, paramsMap["key"][0])
+		prm.prmPath = filepath.Join(prm.targetDirectory, paramsMap["prm"][0])
+		prm.nodeIniPath = filepath.Join(prm.targetDirectory, paramsMap["nodeINI"][0])
 	}
 
 	// Check if other parameters were specified. If not, raise fatal error
-	listOfKeys := []string {"nodePreference", "intelSource", "cuda8Source", "cuda10Source", "cuda8Home", "cuda10Home"}
+	listOfKeys := []string{"nodePreference", "intelSource", "cuda8Source", "cuda10Source", "cuda8Home", "cuda10Home"}
 	checkIfParamsSpecified(listOfKeys, paramsMap)
 
 	prm.nodePreference = paramsMap["nodePreference"][0]
 
 	prm.intelSource = paramsMap["intelSource"][0]
-	prm.cuda8Source = paramsMap["cuda8Source"][0]
-	prm.cuda10Source= paramsMap["cuda10Source"][0]
-	prm.cuda8Home = paramsMap["cuda8Home"][0]
+	prm.cuda11Source = paramsMap["cuda11Source"][0]
+	prm.cuda10Source = paramsMap["cuda10Source"][0]
+	prm.cuda11Home = paramsMap["cuda11Home"][0]
 	prm.cuda10Home = paramsMap["cuda10Home"][0]
 
 	// Check files specified really exist
-	var files = [...]string {prm.keyPath, prm.xyzPath, prm.prmPath, prm.nodeIniPath, prm.intelSource,
-		prm.cuda8Home, prm.cuda8Source, prm.cuda10Home, prm.cuda10Source}
+	var files = [...]string{prm.keyPath, prm.xyzPath, prm.prmPath, prm.nodeIniPath, prm.intelSource,
+		prm.cuda11Home, prm.cuda11Source, prm.cuda10Home, prm.cuda10Source}
 	for _, file := range files {
 		fileExists, err := pathExists(file)
 		if err != nil {
@@ -427,9 +434,13 @@ func generateGenParams(paramsMap map[string][]string) generalParameters {
 func pathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	// file exists and no error
-	if err == nil { return true, nil }
+	if err == nil {
+		return true, nil
+	}
 	// file does not exist and no error
-	if os.IsNotExist(err) { return false, nil }
+	if os.IsNotExist(err) {
+		return false, nil
+	}
 	// file exists and error
 	return true, err
 }
@@ -437,17 +448,18 @@ func pathExists(path string) (bool, error) {
 // Contains fields for parameters relevant to multiple steps
 type generalParameters struct {
 	targetDirectory string
-	xyzPath string
-	keyPath string
-	prmPath string
-	nodeIniPath string
-	nodePreference string
-	intelSource string
-	cuda8Source string
-	cuda8Home string
-	cuda10Source string
-	cuda10Home string
+	xyzPath         string
+	keyPath         string
+	prmPath         string
+	nodeIniPath     string
+	nodePreference  string
+	intelSource     string
+	cuda11Source    string
+	cuda11Home      string
+	cuda10Source    string
+	cuda10Home      string
 }
+
 // Contains fields for parameters relevant to gofep_dynamic_setup
 type setupParameters struct {
 	vdw []string
@@ -457,20 +469,20 @@ type setupParameters struct {
 
 // Contains fields for parameters relevant to gofep_dynamic
 type dynamicParameters struct {
-	name string
-	order int
-	repetitions int
+	name         string
+	order        int
+	repetitions  int
 	stepInterval string
 	saveInterval string
-	numSteps string
-	ensemble string
-	temp string
-	pressure string
+	numSteps     string
+	ensemble     string
+	temp         string
+	pressure     string
 }
 
 // Contains fields for parameters relevant to gofep_bar
 type barParameters struct {
-	temp string
+	temp          string
 	frameInterval string
 }
 
@@ -481,5 +493,3 @@ type block struct {
 	// lines of ini inside braces
 	lines []string
 }
-
-
