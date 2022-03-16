@@ -187,8 +187,6 @@ func createTempDynamicScript(subDir string, xyzPath string, keyPath string, genP
 	_, err = tempFile.WriteString("#!/bin/bash\n")
 	// Begin here document (all following command will be performed inside node)
 	_, err = tempFile.WriteString("ssh -o \"StrictHostKeyChecking no\" " + n.name + " << END\n")
-	// Source universally needed files
-	_, err = tempFile.WriteString("\tsource " + genPrm.intelSource + "\n")
 	// Source gpu dependant files
 	var openMMHome string
 	// Source CUDA files and get openMMHome variable

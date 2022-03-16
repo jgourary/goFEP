@@ -62,10 +62,9 @@ func main() {
 		// Args[2] = call
 		switch args[2] {
 
-		case "setup":
+		case "dynamic_setup":
 			// run dynamic setup
 			DynamicSetup(genPrm, setupPrm)
-
 		case "dynamic":
 
 			// Check that enough arguments are provided
@@ -100,7 +99,8 @@ func main() {
 					"If more assistance is needed with this issue, launch goFEP with no arguments to access built-in help function")
 				log.Fatal(err)
 			}
-
+		case "bar_setup":
+			BARSetup(&genPrm)
 		case "bar":
 			// Check that enough arguments were provided
 			if argsLen < 4 {

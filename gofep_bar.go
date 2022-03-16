@@ -173,8 +173,6 @@ func createTempBAR1Script(subBarDir string, arc1Path string, arc2Path string, ge
 	_, err = file.WriteString("#!/bin/bash\n")
 	// Begin here document (all following command will be performed inside node)
 	_, err = file.WriteString("ssh -o \"StrictHostKeyChecking no\" " + n.name + " << END\n")
-	// Source universally needed files
-	_, err = file.WriteString("\tsource " + genPrm.intelSource + "\n")
 	// Source gpu dependant files
 	var openMMHome string
 	// Source CUDA files and get openMMHome variable
@@ -316,8 +314,6 @@ func createTempBAR2Script(barPath string, frameCount string, genPrm *generalPara
 	_, err = tempFile.WriteString("#!/bin/bash\n")
 	// Begin here document (all following command will be performed inside node)
 	_, err = tempFile.WriteString("ssh -o \"StrictHostKeyChecking no\" " + n.name + " << END\n")
-	// Source universally needed files
-	_, err = tempFile.WriteString("\tsource " + genPrm.intelSource + "\n")
 	// Source gpu dependant files
 	var openMMHome string
 	// Source CUDA files and get openMMHome variable

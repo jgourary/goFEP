@@ -402,19 +402,18 @@ func generateGenParams(paramsMap map[string][]string) generalParameters {
 	}
 
 	// Check if other parameters were specified. If not, raise fatal error
-	listOfKeys := []string{"nodePreference", "intelSource", "cuda8Source", "cuda10Source", "cuda8Home", "cuda10Home"}
+	listOfKeys := []string{"nodePreference", "cuda11Source", "cuda10Source", "cuda11Home", "cuda10Home"}
 	checkIfParamsSpecified(listOfKeys, paramsMap)
 
 	prm.nodePreference = paramsMap["nodePreference"][0]
 
-	prm.intelSource = paramsMap["intelSource"][0]
 	prm.cuda11Source = paramsMap["cuda11Source"][0]
 	prm.cuda10Source = paramsMap["cuda10Source"][0]
 	prm.cuda11Home = paramsMap["cuda11Home"][0]
 	prm.cuda10Home = paramsMap["cuda10Home"][0]
 
 	// Check files specified really exist
-	var files = [...]string{prm.keyPath, prm.xyzPath, prm.prmPath, prm.nodeIniPath, prm.intelSource,
+	/*var files = [...]string{prm.keyPath, prm.xyzPath, prm.prmPath, prm.nodeIniPath,
 		prm.cuda11Home, prm.cuda11Source, prm.cuda10Home, prm.cuda10Source}
 	for _, file := range files {
 		fileExists, err := pathExists(file)
@@ -425,7 +424,7 @@ func generateGenParams(paramsMap map[string][]string) generalParameters {
 			err = errors.New("file specified in INI \"" + file + "\" does not exist")
 			log.Fatal(err)
 		}
-	}
+	}*/
 
 	return prm
 }
