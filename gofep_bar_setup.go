@@ -7,20 +7,21 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 )
 
 // BAR setup sets up the folders that BAR related files will be save in
-func BARSetup(genPrm *generalParameters) {
+func BARSetup(genPrm *generalParameters, barPrm barParameters) {
 	fmt.Println("\nBeginning BAR setup in directory: " + genPrm.targetDirectory)
 	t1 := time.Now()
 
 	//dynDirectory := filepath.Join(genPrm.targetDirectory,"dynamic")
 
-	// Get number of folders in dyn directory without arc files
+	/*// Get number of folders in dyn directory without arc files
 	fmt.Println("\nChecking dynamic folders to verify output...")
 	// flag error that BAR should not be run yet
-	/*dynDirProb := isDynamicComplete(dynDirectory)
+	dynDirProb := isDynamicComplete(dynDirectory)
 	if dynDirProb != nil {
 		log.Fatal(dynDirProb)
 	}*/
@@ -30,7 +31,7 @@ func BARSetup(genPrm *generalParameters) {
 	barPairings := getBarPairings(genPrm.targetDirectory)
 	// Create folders with names based on these pairings in the BAR directory
 	fmt.Println("\nGenerating BAR folders accordingly...")
-	createBarFolders(genPrm.targetDirectory, barPairings)
+	createBarFolders(genPrm.targetDirectory, barPairings, barPrm, genPrm)
 
 	t2 := time.Now()
 	fmt.Println("\nBAR Setup finished in " + t2.Sub(t1).String())
@@ -100,10 +101,10 @@ func getBarPairings(directory string) [][]string {
 }
 
 // Creates folders in BAR directory based on pairings
-func createBarFolders(directory string, barPairings [][]string) {
+func createBarFolders(directory string, barPairings [][]string, barPrm barParameters, genPrm *generalParameters) {
 	barDirectory := filepath.Join(directory, "bar")
 	// clear existing contents
-	removeContents(barDirectory)
+	//removeContents(barDirectory)
 	// add new folders
 	for i:=0; i<len(barPairings); i++ {
 		folderPath := filepath.Join(barDirectory, barPairings[i][0] + "_" + barPairings[i][1])
@@ -112,5 +113,16 @@ func createBarFolders(directory string, barPairings [][]string) {
 			fmt.Println("Failed to create directory " + folderPath)
 			log.Fatal(err)
 		}
+
+		thisFile, _ := os.Create(filepath.Join(folderPath, "bar1.sh"))
+		path1 := "../../dynamic/" + barPairings[i][0] + "/" + strings.ReplaceAll(filepath.Base(genPrm.xyzPath), ".xyz", ".arc")
+		path2 := "../../dynamic/" + barPairings[i][1] + "/" + strings.ReplaceAll(filepath.Base(genPrm.xyzPath), ".xyz", ".arc")
+		thisFile.WriteString("nohup /home/liuchw/Softwares/tinkers/Tinker9-latest/build_cuda11.2/tinker9 bar 1 " + path1 + " " + barPrm.temp + " " + path2 + " " + barPrm.temp + " > bar1.log \n")
+
+		thisFile, _ = os.Create(filepath.Join(folderPath, "bar2.sh"))
+		path1 = strings.ReplaceAll(filepath.Base(genPrm.xyzPath), ".xyz", ".bar")
+		_, err = thisFile.WriteString("nohup /home/liuchw/Softwares/tinkers/Tinker9-latest/build_cuda11.2/tinker9 bar 2 " + path1 + " > bar2.log \n")
+		// + " 1 " + frameCount + " " + barPrm.frameInterval +
+		//			" 1 " + frameCount + " " + barPrm.frameInterval +
 	}
 }

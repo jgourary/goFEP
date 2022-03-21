@@ -64,7 +64,8 @@ func main() {
 
 		case "dynamic_setup":
 			// run dynamic setup
-			DynamicSetup(genPrm, setupPrm)
+			DynamicSetup(genPrm, setupPrm, dynPrm)
+			BARSetup(&genPrm, barPrm)
 		case "dynamic":
 
 			// Check that enough arguments are provided
@@ -100,7 +101,7 @@ func main() {
 				log.Fatal(err)
 			}
 		case "bar_setup":
-			BARSetup(&genPrm)
+			BARSetup(&genPrm, barPrm)
 		case "bar":
 			// Check that enough arguments were provided
 			if argsLen < 4 {
@@ -119,7 +120,7 @@ func main() {
 			}
 
 			// Setup BAR folders
-			BARSetup(&genPrm)
+			BARSetup(&genPrm, barPrm)
 			// Get nodes from node INI
 			ng := getNodeGroup(&genPrm)
 			// Run BAR
@@ -150,7 +151,7 @@ func main() {
 				numNodes = len(setupPrm.vdw)
 			}
 			// Setup for dynamic
-			DynamicSetup(genPrm, setupPrm)
+			DynamicSetup(genPrm, setupPrm, dynPrm)
 			// Run dynamic
 			ng.DynamicManager(&genPrm, dynPrm, numNodes)
 
@@ -159,7 +160,7 @@ func main() {
 				numNodes = len(setupPrm.vdw) - 1
 			}
 			// Setup for BAR
-			BARSetup(&genPrm)
+			BARSetup(&genPrm, barPrm)
 			// Run BAR
 			ng.BARManager(&genPrm, &barPrm, numNodes)
 			// Get results

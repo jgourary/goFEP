@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func DynamicSetup(genPrm generalParameters, setupPrm setupParameters) {
+func DynamicSetup(genPrm generalParameters, setupPrm setupParameters, dynPrm []dynamicParameters) {
 
 	// get sys time
 	start := time.Now()
@@ -28,7 +28,7 @@ func DynamicSetup(genPrm generalParameters, setupPrm setupParameters) {
 
 	// Create folders to store xyz and key files
 	fmt.Println("\nCreating Folders...")
-	createDynamicFolders(genPrm.targetDirectory, dynamicFolders)
+	createDynamicFolders(genPrm.targetDirectory, dynamicFolders, dynPrm, genPrm)
 
 	// Populate folders with xyz files
 	fmt.Println("\nPopulating Folders with XYZ files...")
@@ -112,7 +112,7 @@ func copyPrmFile(sourcePrmPath string, targetDirectory string) string {
 }
 
 // Create subdirectories in dynamic folder based on folder names
-func createDynamicFolders(directory string, dynamicFolders []string) {
+func createDynamicFolders(directory string, dynamicFolders []string, dynPrm []dynamicParameters, genPrm generalParameters) {
 
 	// Iterate through all folders to be created in ~/dynamic/
 	for _, folderName := range dynamicFolders {
@@ -123,6 +123,15 @@ func createDynamicFolders(directory string, dynamicFolders []string) {
 		if err != nil {
 			fmt.Println("Failed to create dynamic folder: " + folderPath)
 			log.Fatal(err)
+		}
+
+		for i, dyn := range dynPrm {
+			thisFile, _ := os.Create(filepath.Join(folderPath, "dyn_" + strconv.Itoa(i) + ".sh"))
+			path1 := filepath.Base(genPrm.xyzPath)
+			path2 := strings.ReplaceAll(filepath.Base(genPrm.xyzPath), ".xyz", ".key")
+			path3 := "dyn_" + strconv.Itoa(i) + ".log"
+			thisFile.WriteString("nohup /home/liuchw/Softwares/tinkers/Tinker9-latest/build_cuda11.2/tinker9 dynamic " + path1 + " -k " + path2 + " " + dyn.numSteps +
+			" " + dyn.stepInterval + " " + dyn.saveInterval + " " + dyn.ensemble + " " + dyn.temp + " " + dyn.pressure + " N > " + path3 + " \n")
 		}
 	}
 }
@@ -217,7 +226,7 @@ func createKeyFiles(directory string, sourcePath string, dynamicFolders []string
 					log.Fatal(err)
 				}
 			} else if strings.Count(line, "parameters") > 0 {
-				_, err = newKey.WriteString("parameters " + absPrmPath + "\n")
+				_, err = newKey.WriteString("parameters ../../" + filepath.Base(absPrmPath) + "\n")
 				if err != nil {
 					fmt.Println("Failed to write parameters line to key: " + keyPath)
 					log.Fatal(err)
