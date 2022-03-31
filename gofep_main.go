@@ -62,7 +62,7 @@ func main() {
 		// Args[2] = call
 		switch args[2] {
 
-		case "dynamic_setup":
+		case "setup":
 			// run dynamic setup
 			DynamicSetup(genPrm, setupPrm, dynPrm)
 			BARSetup(&genPrm, barPrm)

@@ -69,7 +69,7 @@ func getDynamicFolderNames(prm setupParameters) []string {
 		elePerc := int(100 * eleFloat)
 
 		// pad it with zeros to normalize lengths
-		thisVdw := fmt.Sprintf("%03d",  vdwPerc)
+		thisVdw := fmt.Sprintf("%03d", vdwPerc)
 		thisEle := fmt.Sprintf("%03d", elePerc)
 
 		// combine with separation underscore
@@ -83,7 +83,7 @@ func getDynamicFolderNames(prm setupParameters) []string {
 func copyPrmFile(sourcePrmPath string, targetDirectory string) string {
 
 	// If source prm path is not absolute, redefine from target directory
-	sourcePrmPath,err := filepath.Abs(sourcePrmPath)
+	sourcePrmPath, err := filepath.Abs(sourcePrmPath)
 	if err != nil {
 		fmt.Println("Could not compute absolute path to parameters file location \"" + sourcePrmPath + "\" specified in general section of INI")
 		log.Fatal(err)
@@ -93,7 +93,7 @@ func copyPrmFile(sourcePrmPath string, targetDirectory string) string {
 	prmName := filepath.Base(sourcePrmPath)
 
 	// Create folder
-	folderPath := filepath.Join(targetDirectory,"parameters")
+	folderPath := filepath.Join(targetDirectory, "parameters")
 	err = os.MkdirAll(folderPath, octalPermissions)
 	if err != nil {
 		fmt.Println("Failed to create directory to store parameters file: " + folderPath)
@@ -126,12 +126,12 @@ func createDynamicFolders(directory string, dynamicFolders []string, dynPrm []dy
 		}
 
 		for i, dyn := range dynPrm {
-			thisFile, _ := os.Create(filepath.Join(folderPath, "dyn_" + strconv.Itoa(i) + ".sh"))
+			thisFile, _ := os.Create(filepath.Join(folderPath, "dyn_"+strconv.Itoa(i)+".sh"))
 			path1 := filepath.Base(genPrm.xyzPath)
 			path2 := strings.ReplaceAll(filepath.Base(genPrm.xyzPath), ".xyz", ".key")
 			path3 := "dyn_" + strconv.Itoa(i) + ".log"
-			thisFile.WriteString("nohup /home/liuchw/Softwares/tinkers/Tinker9-latest/build_cuda11.2/tinker9 dynamic " + path1 + " -k " + path2 + " " + dyn.numSteps +
-			" " + dyn.stepInterval + " " + dyn.saveInterval + " " + dyn.ensemble + " " + dyn.temp + " " + dyn.pressure + " N > " + path3 + " \n")
+			thisFile.WriteString("dynamic_gpu " + path1 + " -k " + path2 + " " + dyn.numSteps +
+				" " + dyn.stepInterval + " " + dyn.saveInterval + " " + dyn.ensemble + " " + dyn.temp + " " + dyn.pressure + " N > " + path3 + " \n")
 		}
 	}
 }
@@ -140,9 +140,9 @@ func createDynamicFolders(directory string, dynamicFolders []string, dynPrm []dy
 func createXYZFiles(directory string, sourcePath string, dynamicFolders []string) {
 
 	// If source path is not absolute already, redefine from CWD
-	sourcePath,err := filepath.Abs(sourcePath)
+	sourcePath, err := filepath.Abs(sourcePath)
 	if err != nil {
-		fmt.Println("Could not compute absolute path to xyz file location \"" + sourcePath +"\" specified in general block of INI")
+		fmt.Println("Could not compute absolute path to xyz file location \"" + sourcePath + "\" specified in general block of INI")
 		log.Fatal(err)
 	}
 
@@ -165,9 +165,9 @@ func createXYZFiles(directory string, sourcePath string, dynamicFolders []string
 func createKeyFiles(directory string, sourcePath string, dynamicFolders []string, prm setupParameters, absPrmPath string) {
 
 	// If source prm path is not absolute already, redefine from target directory
-	sourcePath,err := filepath.Abs(sourcePath)
+	sourcePath, err := filepath.Abs(sourcePath)
 	if err != nil {
-		fmt.Println("Could not compute absolute path to key file location \"" + sourcePath +"\" specified in general block of INI")
+		fmt.Println("Could not compute absolute path to key file location \"" + sourcePath + "\" specified in general block of INI")
 		log.Fatal(err)
 	}
 
@@ -184,7 +184,7 @@ func createKeyFiles(directory string, sourcePath string, dynamicFolders []string
 
 		// Get folder path
 		folderPath := filepath.Join(directory, "dynamic", dynamicFolders[i])
-		keyPath := filepath.Join(folderPath,keyName)
+		keyPath := filepath.Join(folderPath, keyName)
 
 		// Create new key file
 		newKey, err := os.Create(keyPath)
